@@ -605,23 +605,33 @@ class SalesDashboard:
         with col2:
             st.markdown("#### 📋 Detailed Timeline Data")
             
-            # Display timeline data table
-            display_cols = ['Nama_Sales', 'Level_Sales', 'Total_Customers', 'Avg_Deal_Closure_Days', 
-                          'Days_to_Presentasi', 'Days_to_Penawaran_Harga', 'Days_to_Negosiasi']
+            # Display timeline data table with available columns
+            base_cols = ['Nama_Sales', 'Level_Sales', 'Total_Customers', 'Avg_Deal_Closure_Days']
+            stage_cols = [col for col in timeline_data.columns if col.startswith('Days_to_')]
             
-            available_cols = [col for col in display_cols if col in timeline_data.columns]
-            display_data = timeline_data[available_cols].copy()
+            display_cols = []
+            for col in base_cols:
+                if col in timeline_data.columns:
+                    display_cols.append(col)
+            
+            # Add up to 3 stage columns
+            display_cols.extend(stage_cols[:3])
+            
+            display_data = timeline_data[display_cols].copy()
             
             # Rename columns for better display
             column_mapping = {
                 'Nama_Sales': 'Salesperson',
                 'Level_Sales': 'Level',
                 'Total_Customers': 'Customers',
-                'Avg_Deal_Closure_Days': 'Avg Closure (days)',
-                'Days_to_Presentasi': 'To Presentasi',
-                'Days_to_Penawaran_Harga': 'To Penawaran',
-                'Days_to_Negosiasi': 'To Negosiasi'
+                'Avg_Deal_Closure_Days': 'Avg Closure (days)'
             }
+            
+            # Add dynamic mappings for stage columns
+            for col in stage_cols[:3]:
+                if col in display_data.columns:
+                    stage_name = col.replace('Days_to_', '').replace('_', ' ')
+                    column_mapping[col] = f'To {stage_name}'
             
             display_data = display_data.rename(columns=column_mapping)
             st.dataframe(display_data, use_container_width=True)
@@ -633,22 +643,39 @@ class SalesDashboard:
         
         with insight_col1:
             st.markdown("#### 🏃‍♂️ Speed Champions")
-            fast_progression = timeline_data.dropna(subset=['Days_to_Presentasi']).nsmallest(3, 'Days_to_Presentasi')
-            for idx, row in fast_progression.iterrows():
-                st.success(f"⚡ **{row['Nama_Sales']}**: {row['Days_to_Presentasi']:.1f} days to Presentasi")
+            # Check if Presentasi column exists (with correct name)
+            presentasi_col = None
+            for col in timeline_data.columns:
+                if 'Presentasi' in col and col.startswith('Days_to_'):
+                    presentasi_col = col
+                    break
+            
+            if presentasi_col and not timeline_data[presentasi_col].isna().all():
+                fast_progression = timeline_data.dropna(subset=[presentasi_col]).nsmallest(3, presentasi_col)
+                for idx, row in fast_progression.iterrows():
+                    st.success(f"⚡ **{row['Nama_Sales']}**: {row[presentasi_col]:.1f} days to Presentasi")
+            else:
+                st.info("No Presentasi progression data available")
         
         with insight_col2:
             st.markdown("#### 🎯 Consistent Performers")
             # Find salespeople with good progression across multiple stages
-            consistent_performers = timeline_data.dropna(subset=['Days_to_Presentasi', 'Days_to_Penawaran_Harga'])
-            if not consistent_performers.empty:
-                consistent_performers['Avg_Progression'] = (
-                    consistent_performers['Days_to_Presentasi'] + 
-                    consistent_performers['Days_to_Penawaran_Harga']
-                ) / 2
-                top_consistent = consistent_performers.nsmallest(3, 'Avg_Progression')
-                for idx, row in top_consistent.iterrows():
-                    st.info(f"🎯 **{row['Nama_Sales']}**: {row['Avg_Progression']:.1f} avg days per stage")
+            # Check which columns actually exist before using them
+            available_stage_cols = [col for col in timeline_data.columns if col.startswith('Days_to_')]
+            
+            if len(available_stage_cols) >= 2:
+                # Use the first two available stage columns for consistency analysis
+                consistent_performers = timeline_data.dropna(subset=available_stage_cols[:2])
+                if not consistent_performers.empty:
+                    # Calculate average progression across available stages
+                    consistent_performers['Avg_Progression'] = consistent_performers[available_stage_cols[:2]].mean(axis=1)
+                    top_consistent = consistent_performers.nsmallest(3, 'Avg_Progression')
+                    for idx, row in top_consistent.iterrows():
+                        st.info(f"🎯 **{row['Nama_Sales']}**: {row['Avg_Progression']:.1f} avg days per stage")
+                else:
+                    st.info("No data available for consistency analysis")
+            else:
+                st.info("Insufficient stage data for consistency analysis")
         
         with insight_col3:
             st.markdown("#### 📈 Improvement Opportunities")

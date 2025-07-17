@@ -197,9 +197,13 @@ class MetricsCalculator:
             for stage in stage_order[1:]:  # Skip Inisiasi itself
                 if stage_times[stage]:
                     avg_days = np.mean(stage_times[stage])
-                    sales_timeline[f'Days_to_{stage}'] = round(avg_days, 1)
+                    # Replace spaces with underscores for column names
+                    clean_stage = stage.replace(' ', '_')
+                    sales_timeline[f'Days_to_{clean_stage}'] = round(avg_days, 1)
                 else:
-                    sales_timeline[f'Days_to_{stage}'] = None
+                    # Replace spaces with underscores for column names
+                    clean_stage = stage.replace(' ', '_')
+                    sales_timeline[f'Days_to_{clean_stage}'] = None
             
             # Average transition times
             for transition, times in stage_transitions.items():
