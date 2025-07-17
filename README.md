@@ -30,8 +30,9 @@ Interactive dashboard untuk analisis performa sales dan prediksi probabilitas de
 ├── 📄 dashboard_utils.py         # Utility classes untuk data processing & charts
 ├── 📄 predictive_model.py        # Machine learning model untuk prediksi
 ├── 📄 requirements.txt           # Python packages yang dibutuhkan
+├── 📄 test_dashboard.py          # Test script untuk verifikasi dashboard
 ├── 📄 README.md                  # Documentation (file ini)
-└── 📄 sales_visits_enriched_csv.csv  # Data sales (harus ada)
+└── 📄 sales_visits_finalbgt_enriched.csv  # Data sales (harus ada)
 ```
 
 ## 🛠️ Installation & Setup
@@ -42,9 +43,14 @@ pip install -r requirements.txt
 ```
 
 ### 2. **Pastikan Data File Tersedia**
-Pastikan file `sales_visits_enriched_csv.csv` ada di folder yang sama dengan script.
+Pastikan file `sales_visits_finalbgt_enriched.csv` ada di folder yang sama dengan script.
 
-### 3. **Run Dashboard**
+### 3. **Test Dashboard (Optional)**
+```bash
+python test_dashboard.py
+```
+
+### 4. **Run Dashboard**
 ```bash
 streamlit run dashboard_main.py
 ```
@@ -66,16 +72,28 @@ Buka browser dan kunjungi: `http://localhost:8501`
 Dashboard menampilkan 5 metric utama:
 - 📊 **Total Visits**: Total kunjungan sales
 - 🎯 **Total Deals**: Total deal yang berhasil
+### **2. Key Metrics Dashboard**
+- 🔢 **Total Visits**: Jumlah total kunjungan sales
+- ✅ **Won Deals**: Jumlah deal yang berhasil (Status: "Deal")
+- ⏳ **Ongoing Deals**: Jumlah deal yang sedang berjalan (Status: "Berpotensi Deal")
 - 📈 **Win Rate**: Persentase keberhasilan deal
 - ⏱️ **Avg Visits to Close**: Rata-rata kunjungan untuk closing
-- 💰 **Total Deal Value**: Total nilai deal dalam milyar rupiah
+- 💰 **Won Value**: Total nilai deal yang berhasil dalam juta rupiah
+- 🎯 **Potential Value**: Total nilai potensial dari ongoing deals
 
 ### **3. Performance Charts**
+- **Deal Status Distribution**: Breakdown status deal (Won/Ongoing/Lost)
 - **Win Rate by Segment**: Performa per segmen customer
 - **Sales Funnel**: Analisis funnel dari Inisiasi → Deal
 - **Monthly Trend**: Trend performa bulanan
 - **Sales Performance Scatter**: Visualisasi visits vs deals per sales
 - **Deal Probability Heatmap**: Probabilitas deal per progress vs visit number
+
+### **4. Updated Data Structure**
+Dashboard sekarang menggunakan data dengan:
+- ✨ **Nilai_Kontrak**: Nilai kontrak aktual dalam rupiah
+- 🎯 **Status_Kontrak**: "Berpotensi Deal", "Deal", "Cancel"
+- 📊 **Enhanced Analytics**: Nilai ditampilkan dalam juta rupiah untuk keterbacaan
 
 ### **4. Detailed Analysis Tabs**
 

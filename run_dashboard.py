@@ -38,7 +38,7 @@ def install_requirements():
 
 def check_data_file():
     """Check if data file exists"""
-    data_file = "sales_visits_enriched_csv.csv"
+    data_file = "sales_visits_finalbgt_enriched.csv"
     if os.path.exists(data_file):
         print(f"✅ Data file '{data_file}' found!")
         return True

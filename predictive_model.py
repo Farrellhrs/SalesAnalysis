@@ -47,8 +47,9 @@ class PredictiveModel:
         df_ml['Deal_Binary'] = (df_ml['Status_Kontrak'] == 'Deal').astype(int)
         
         # Feature engineering
-        df_ml['Target_Sales_Scaled'] = df_ml['Target_Sales'] / 1e9
-        df_ml['Target_Segmen_Scaled'] = df_ml['Target_Segmen'] / 1e9
+        df_ml['Nilai_Kontrak_Scaled'] = df_ml['Nilai_Kontrak'] / 1e6  # Scale to millions
+        df_ml['Target_Sales_Scaled'] = df_ml['Target_Sales'] / 1e6  # Scale to millions
+        df_ml['Target_Segmen_Scaled'] = df_ml['Target_Segmen'] / 1e6  # Scale to millions
         
         # Interaction features
         df_ml['Progress_Visit_Interaction'] = df_ml['Progress_Encoded'] * df_ml['Kunjungan_Ke']
@@ -58,7 +59,7 @@ class PredictiveModel:
         self.feature_columns = [
             'Progress_Encoded', 'Kunjungan_Ke', 'Segmen_Encoded',
             'Status_Customer_Encoded', 'Level_Sales_Encoded',
-            'Target_Sales_Scaled', 'Target_Segmen_Scaled',
+            'Nilai_Kontrak_Scaled', 'Target_Sales_Scaled', 'Target_Segmen_Scaled',
             'Progress_Visit_Interaction', 'Segmen_Visit_Interaction'
         ]
         
@@ -191,7 +192,7 @@ class PredictiveModel:
     
     def predict_probability(self, progress, visit_number, segment='Private',
                           customer_status='Baru', level_sales='AM',
-                          target_sales=5e9, target_segmen=50e9):
+                          nilai_kontrak=100e6, target_sales=5e8, target_segmen=50e8):
         """Predict deal probability for given parameters"""
         if not self.is_trained or self.model is None:
             # Use simple rule-based prediction if no model available
@@ -216,9 +217,10 @@ class PredictiveModel:
                 'Segmen': [segment],
                 'Status_Customer': [customer_status],
                 'Level_Sales': [level_sales],
+                'Nilai_Kontrak': [nilai_kontrak],
                 'Target_Sales': [target_sales],
                 'Target_Segmen': [target_segmen],
-                'Status_Kontrak': ['Tidak Deal']  # Dummy value
+                'Status_Kontrak': ['Berpotensi Deal']  # Dummy value for ongoing deals
             })
             
             # Prepare features
@@ -238,10 +240,14 @@ class PredictiveModel:
     
     def get_feature_importance(self):
         """Get feature importance dataframe"""
+        if self.feature_importance_df is None or self.feature_importance_df.empty:
+            return None
         return self.feature_importance_df
     
     def get_model_metrics(self):
         """Get model performance metrics"""
+        if not self.model_metrics:
+            return None
         return self.model_metrics
     
     def batch_predict(self, df):
